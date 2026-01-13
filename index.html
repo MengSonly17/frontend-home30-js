@@ -161,40 +161,15 @@
                     aria-label="Table navigation">
                     <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
                         Showing
-                        <span class="font-semibold text-gray-900 dark:text-white">1-</span>
-                        <span class="font-semibold text-gray-900 dark:text-white ">5</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">
+                            <span id="startNum"></span>
+                            -
+                            <span id="endNum"></span>
+                        </span>
                         of
-                        <span class="font-semibold text-gray-900 dark:text-white totalProducts">0</span>
+                        <span class="font-semibold text-gray-900 dark:text-white" id="totalProduct">1000</span>
                     </span>
-                    <ul class="inline-flex items-stretch -space-x-px">
-                        <li>
-                            <a href="#" id="prevBtn"
-                                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <span class="sr-only">Previous</span>
-                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Previous
-                            </a>
-                        </li>
- 
-
-                        <li>
-                            <a href="#" id="nextBtn"
-                                class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <span class="sr-only">Next</span>
-                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Next
-                            </a>
-                        </li>
+                    <ul id="pagination" class="inline-flex items-stretch -space-x-px">
                     </ul>
                 </nav>
                 <!-- end of footer -->
@@ -359,9 +334,82 @@
         const category = document.getElementById('category');
         const quantity = document.getElementById('quantity');
         const description = document.getElementById('description');
-        let limit = 7;
-        let offset = 0;
 
+        let limit = 7;
+        let offset = 0; 
+
+        const pagination = document.getElementById('pagination');
+
+        const renderPagination = async (curPage) => {
+            try {
+                const res = await fetch('https://api.escuelajs.co/api/v1/products');
+                const data = await res.json();
+                let lengthOfPag = data.length;
+                lengthOfPag = 10;
+
+                document.getElementById('totalProduct').innerText = lengthOfPag;
+
+                let tr = `
+                    <li>
+                            <a href="#" onclick="currentPage(${curPage - 1})"
+                                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                <span class="sr-only">Previous</span>
+                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </li> 
+                `;
+
+                for (let i = 1; i < lengthOfPag; i++) {
+                    tr += `
+                        <li>
+                            <a href="#" onclick="currentPage(${i})"
+                                class="${i === curPage ? 'bg-white' : ''} flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500   border border-gray-300 hover:bg-gray-100 hover:text-gray-700  dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                ${i}
+                            </a>
+                        </li>
+                    `;
+                }
+
+                tr += `
+                    <li>
+                            <a href="#" onclick="currentPage(${curPage + 1})"
+                                class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                <span class="sr-only">Next</span>
+                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </li>   
+                `;
+
+                pagination.innerHTML = tr;
+
+            } catch (error) {
+                console.log('Erorr is : ', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', renderPagination(1));
+
+        const currentPage = (page) => {
+            if (page > 0 && page < 10) {
+                offset = (page - 1) * limit;
+                fetchData();
+                renderPagination(page);
+            }
+            else {
+                alert('Are you serious?')
+                return;
+            }
+        }
 
         // fetch data from api 
         const fetchData = async () => {
@@ -376,6 +424,9 @@
                 const data = await res.json();
                 // console.log(data)
 
+                document.getElementById('startNum').innerText = data[0].id;
+                document.getElementById('endNum').innerText = data[limit-1].id;
+
                 renderProduct(data);
             } catch (error) {
                 console.log(error);
@@ -383,17 +434,6 @@
         };
 
         fetchData();
-
-        document.getElementById("nextBtn").addEventListener("click", () => {
-            offset += limit;
-            fetchData();
-        });
-
-        document.getElementById("prevBtn").addEventListener("click", () => {
-            offset = Math.max(0, offset - limit); // avoid negative
-            fetchData();
-        });
-        // end of fetch data from api 
 
         // render product function 
         const renderProduct = (products) => {
@@ -624,15 +664,17 @@
                 }
 
                 if (categoryId.value !== 'ALL') {
-                    const res = await fetch(`https://api.escuelajs.co/api/v1/products/?categoryId=${categoryId.value}`);
+                    const res = await fetch(`https://api.escuelajs.co/api/v1/products/?categoryId=${categoryId.value}&offset=${offset}&limit=${limit}`);
                     data = await res.json();
+
+                    console.log(data);
 
                     tbody.innerHTML = '';
                     renderProduct(data);
                 }
                 // console.log(data);
                 // console.log(categoryId.value);
-
+                renderPagination(1);
             } catch (error) {
                 console.log('Error = ', error);
             }
