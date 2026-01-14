@@ -169,8 +169,13 @@
                         of
                         <span class="font-semibold text-gray-900 dark:text-white" id="totalProduct">1000</span>
                     </span>
-                    <ul id="pagination" class="inline-flex items-stretch -space-x-px">
-                    </ul>
+
+                    <!-- pagination -->
+                    <div class="w-[350px] overflow-x-auto" style=" scrollbar-width: none;">
+                        <ul id="pagination" class="inline-flex items-stretch -space-x-px">
+                        </ul>
+                    </div>
+                    <!-- end of pagination -->
                 </nav>
                 <!-- end of footer -->
             </div>
@@ -335,86 +340,17 @@
         const quantity = document.getElementById('quantity');
         const description = document.getElementById('description');
 
-        let limit = 7;
-        let offset = 0; 
+        let limit = 10;
+        let offset = 0;
+        let lengthOfPag;
+        let currentPageForUpdate;
 
-        const pagination = document.getElementById('pagination');
-
-        const renderPagination = async (curPage) => {
-            try {
-                const res = await fetch('https://api.escuelajs.co/api/v1/products');
-                const data = await res.json();
-                let lengthOfPag = data.length;
-                lengthOfPag = 10;
-
-                document.getElementById('totalProduct').innerText = lengthOfPag;
-
-                let tr = `
-                    <li>
-                            <a href="#" onclick="currentPage(${curPage - 1})"
-                                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <span class="sr-only">Previous</span>
-                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </li> 
-                `;
-
-                for (let i = 1; i < lengthOfPag; i++) {
-                    tr += `
-                        <li>
-                            <a href="#" onclick="currentPage(${i})"
-                                class="${i === curPage ? 'bg-white' : ''} flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500   border border-gray-300 hover:bg-gray-100 hover:text-gray-700  dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                ${i}
-                            </a>
-                        </li>
-                    `;
-                }
-
-                tr += `
-                    <li>
-                            <a href="#" onclick="currentPage(${curPage + 1})"
-                                class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <span class="sr-only">Next</span>
-                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </li>   
-                `;
-
-                pagination.innerHTML = tr;
-
-            } catch (error) {
-                console.log('Erorr is : ', error);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', renderPagination(1));
-
-        const currentPage = (page) => {
-            if (page > 0 && page < 10) {
-                offset = (page - 1) * limit;
-                fetchData();
-                renderPagination(page);
-            }
-            else {
-                alert('Are you serious?')
-                return;
-            }
-        }
 
         // fetch data from api 
         const fetchData = async () => {
             try {
                 const url = `https://api.escuelajs.co/api/v1/products?offset=${offset}&limit=${limit}`;
+                // const url = `https://api.escuelajs.co/api/v1/products`;
                 const res = await fetch(url);
 
                 if (!res.ok) {
@@ -424,8 +360,8 @@
                 const data = await res.json();
                 // console.log(data)
 
-                document.getElementById('startNum').innerText = data[0].id;
-                document.getElementById('endNum').innerText = data[limit-1].id;
+                // document.getElementById('startNum').innerText = offset+1;
+                // document.getElementById('endNum').innerText = offset += limit;
 
                 renderProduct(data);
             } catch (error) {
@@ -500,6 +436,7 @@
             if (res.ok) {
 
                 tbody.innerText = '';
+                renderPagination(currentPageForUpdate);
                 fetchData();
 
                 Swal.fire({
@@ -591,6 +528,7 @@
         // end of update function 
 
         // delete function 
+        let checkDeleteProd = false;
         const deleteProd = async (id) => {
 
             const res = await fetch(`${api_url}/api/v1/products/${id}`, {
@@ -618,7 +556,8 @@
                         });
 
                         tbody.innerText = '';
-                        fetchData();
+                        fetchData(); 
+                        renderPagination(currentPageForUpdate);
                     }
                 });
             }
@@ -655,7 +594,7 @@
                 let data;
 
                 if (categoryId.value === 'ALL') {
-                    const url = `https://api.escuelajs.co/api/v1/products?offset=${offset}&limit=${limit}`;
+                    const url = `https://api.escuelajs.co/api/v1/products`;
                     const res = await fetch(url);
                     data = await res.json();
 
@@ -664,7 +603,7 @@
                 }
 
                 if (categoryId.value !== 'ALL') {
-                    const res = await fetch(`https://api.escuelajs.co/api/v1/products/?categoryId=${categoryId.value}&offset=${offset}&limit=${limit}`);
+                    const res = await fetch(`https://api.escuelajs.co/api/v1/products/?categoryId=${categoryId.value}`);
                     data = await res.json();
 
                     console.log(data);
@@ -727,6 +666,104 @@
         }
         fetchCategory();
         // end of category rendering 
+
+        ////////////////////////////////
+
+        const pagination = document.getElementById('pagination');
+
+        const renderPagination = async (curPage) => {
+            try {
+                const res = await fetch('https://api.escuelajs.co/api/v1/products');
+                const data = await res.json();
+                lengthOfPag = Number.parseInt(data.length / limit);
+                // lengthOfPag = 10;
+
+                let remainNumber = 0;
+                remainNumber = data.length % limit;
+
+                let tr = `
+                    <li>
+                            <a href="#" onclick="currentPage(${curPage - 1})"
+                                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                <span class="sr-only">Previous</span>
+                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </li> 
+                `;
+
+                if (remainNumber) {
+                    for (let i = 1; i <= (lengthOfPag + 1); i++) {
+                        tr += `
+                        <li>
+                            <a href="#" onclick="currentPage(${i})"
+                                class="${i === curPage ? 'bg-white' : ''} flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500   border border-gray-300 hover:bg-gray-100 hover:text-gray-700  dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                ${i}
+                            </a>
+                        </li>
+                    `;
+                    }
+                }
+                else {
+                    for (let i = 1; i <= lengthOfPag; i++) {
+                        tr += `
+                        <li>
+                            <a href="#" onclick="currentPage(${i})"
+                                class="${i === curPage ? 'bg-white' : ''} flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500   border border-gray-300 hover:bg-gray-100 hover:text-gray-700  dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                ${i}
+                            </a>
+                        </li>
+                    `;
+                    }
+                }
+
+                tr += `
+                    <li>
+                            <a href="#" onclick="currentPage(${curPage + 1})"
+                                class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                <span class="sr-only">Next</span>
+                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </li>   
+                `;
+
+                pagination.innerHTML = tr;
+                document.getElementById('totalProduct').innerText = remainNumber ? (lengthOfPag + 1) : lengthOfPag;
+
+
+                document.getElementById('startNum').innerText = offset + 1;
+
+                const endNum = document.getElementById('endNum');
+                ((offset + 10) > data.length) ? endNum.innerText = data.length : endNum.innerText = offset += limit;
+
+            } catch (error) {
+                console.log('Erorr is : ', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', renderPagination(1));
+
+        const currentPage = (page) => {
+            if (page > 0 && page <= lengthOfPag + 1) {
+                offset = (page - 1) * limit;
+                fetchData();
+                renderPagination(page);
+                currentPageForUpdate = page;
+            }
+            else {
+                alert('Are you serious?')
+                return;
+            }
+        }
 
     </script>
 </body>
